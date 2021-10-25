@@ -1,0 +1,31 @@
+.listItem {
+  padding: 10px;
+  display: flex;
+  background: #fff;
+  box-sizing: border-box;
+  margin-bottom: 20px;
+}
+
+.listItem img {
+  height: 160px;
+}
+
+.heroInfo {
+  padding-left: 20px;
+  display: flex;
+  flex-flow: column wrap;
+}
+
+.heroTitle {
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+.heroText {
+  font-size: 14px;
+}
+
+.heroText span {
+  font-weight: bold;
+  color: rgb(25, 25, 34);
+}

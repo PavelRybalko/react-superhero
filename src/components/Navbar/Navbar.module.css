@@ -1,0 +1,28 @@
+.navbar {
+  height: 70px;
+  border: 1px solid #e6e6e6;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  background: #fff;
+}
+
+#logo {
+  font-size: 30px;
+  font-weight: 800;
+}
+
+.addButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: normal;
+  width: auto;
+  text-decoration: none;
+  height: 35px;
+  background-color: inherit;
+  border: none;
+  cursor: pointer;
+}
