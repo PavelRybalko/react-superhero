@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import ReactDOM from 'react-dom';
 import { CgClose } from 'react-icons/cg';
 import s from './Modal.module.css';
@@ -10,30 +10,22 @@ const styles = {
 // const modalRoot = document.querySelector('#modal-root');
 const modalRoot = document.getElementById('modal-root');
 
-export default function Modal({ active, setActive, children }) {
-  // useEffect(() => {
-  //   const handleKeyDown = (e) => {
-  //     if (e.code === 'Escape') {
-  //       setActive(false);
-  //     }
-  //   };
-
-  //   window.addEventListener('keydown', handleKeyDown);
-  //   return () => {
-  //     window.removeEventListener('keydown', handleKeyDown);
-  //   };
-  // }, []);
+export default function Modal({ setEditHero, active, setActive, children }) {
+  const handleCloseModal = () => {
+    setEditHero(null);
+    setActive(false);
+  };
 
   return ReactDOM.createPortal(
     <div
       className={active ? `${s.modal} ${s.active}` : s.modal}
-      onClick={() => setActive(false)}
+      onClick={handleCloseModal}
     >
       <div
         className={active ? `${s.modalContent} ${s.active}` : s.modalContent}
         onClick={(e) => e.stopPropagation()}
       >
-        <button className={s.modalCloseButton} onClick={() => setActive(false)}>
+        <button className={s.modalCloseButton} onClick={handleCloseModal}>
           <CgClose size="26" style={styles} />
         </button>
         {children}

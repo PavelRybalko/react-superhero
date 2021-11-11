@@ -9,14 +9,14 @@ const fetchHeroes = ({ page = 1, pageSize = 5 }) => {
   });
 };
 
-const addHero = (hero) => {
-  return axios.post('/', hero).then(({ data: { data } }) => {
+const addHero = (newHero) => {
+  return axios.post('/', newHero).then(({ data: { data } }) => {
     return data;
   });
 };
 
-const uploadImage = (heroId, image) => {
-  return axios.patch(`/image/${heroId}`, image).then(({ data: { data } }) => {
+const uploadImage = (heroId, data) => {
+  return axios.patch(`/image/${heroId}`, data).then(({ data: { data } }) => {
     return data;
   });
 };

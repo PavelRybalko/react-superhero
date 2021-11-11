@@ -1,4 +1,4 @@
-import { Suspense, useState, useEffect } from 'react';
+import { Suspense, useState, useEffect, useCallback } from 'react';
 // import { Route, Switch, Redirect } from 'react-router-dom';
 // import { ToastContainer } from 'react-toastify';
 // import { toast } from 'react-toastify';
@@ -11,7 +11,6 @@ import Navbar from './components/Navbar';
 import Modal from './components/Modal';
 import HeroForm from './components/HeroForm';
 import HeroesList from './components/HeroesList';
-import { Status } from './data/constants';
 import s from './App.module.css';
 // const ShoppingBasket = lazy(() =>
 //   import('./components/ShoppingBasket' /* webpackChunkName: "ShoppingBasket"*/),
@@ -31,81 +30,49 @@ export default function App() {
   const [editHero, setEditHero] = useState(null);
   const [modalActive, setModalActive] = useState(false);
   const [heroes, setHeroes] = useState([]);
-  const [searchText, setSearchText] = useState(null);
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(5);
   const [fetching, setFetching] = useState(true);
-  const [status, setStatus] = useState(Status.IDLE);
   const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
   const [totalHeroes, setTotalHeroes] = useState(0);
 
-  const handleAdd = async (newHero, image) => {
-    const { hero } = await heroesApi.addHero(newHero);
-
-    const formData = new FormData();
-    formData.append('file', image);
-    const newImage = await heroesApi.uploadImage(hero._id, formData);
-    console.log('newImage - ', newImage);
-    // setHeroes((state) => [...state, { ...hero, image }]);
-    // setHeroes((state) => [...state, hero]);
-  };
-
-  const asyncUploadNewImage = (heroId, image) => {
-    heroesApi.uploadImage(heroId, image);
-  };
-
-  const handleDelete = async (heroId) => {
-    const deletedHero = await heroesApi.removeHero(heroId);
-    setHeroes((heroes) => heroes.filter((hero) => hero._id !== heroId));
-  };
-
-  const handleUpdate = async (hero, heroId, image) => {
-    const updatedHero = await heroesApi.updateHero(heroId, hero);
-    console.log('updatedHero - ', updatedHero);
-    const newImage = await asyncUploadNewImage(hero.id, image);
-    setHeroes((heroes) =>
-      heroes.map((hero) => (hero.id === heroId ? updatedHero : hero))
-    );
-  };
-
-  const scrollHandler = (e) => {
-    const totalWindowHeight = e.target.documentElement.scrollHeight;
-    const scrollPositionFromTop = e.target.documentElement.scrollTop;
-
-    console.log(
-      'общая высота страницы со скроллом',
-      e.target.documentElement.scrollHeight
-    );
-    console.log(
-      'текущее положение скролла от верха страницы',
-      e.target.documentElement.scrollTop
-    );
-    console.log('высота видимой области страницы', window.innerHeight);
-
-    if (
-      totalWindowHeight -
-      (scrollPositionFromTop + window.innerHeight < 100 &&
-        heroes.length < totalHeroes)
-    ) {
-      setFetching(true);
-    }
-  };
-
   useEffect(() => {
-    console.log('Запрос на сервер');
     if (fetching) {
+      setLoading(true);
       heroesApi
-        .fetchHeroes(page)
+        .fetchHeroes(page, pageSize)
         .then(({ data }) => {
-          console.log('Data from Server - ', data);
-          setHeroes([...heroes, ...data.heroes]);
-          setPage((prevState) => prevState + 1);
+          setHeroes((prevHeroes) => [...prevHeroes, ...data.heroes]);
           setTotalHeroes(data.total);
         })
         .finally(() => {
+          setLoading(false);
           setFetching(false);
+          window.scrollTo({
+            top: document.documentElement.offsetHeight,
+            behavior: 'smooth',
+          });
         });
     }
-  }, [fetching]);
+  }, [fetching, pageSize]);
+
+  const scrollHandler = useCallback(
+    (e) => {
+      const totalWindowHeight = e.target.documentElement.scrollHeight;
+      const scrollPositionFromTop = e.target.documentElement.scrollTop;
+
+      if (
+        totalWindowHeight - (scrollPositionFromTop + window.innerHeight) <
+          100 &&
+        heroes.length < totalHeroes
+      ) {
+        setPage((prevState) => prevState + 1);
+        setFetching(true);
+      }
+    },
+    [heroes.length, totalHeroes]
+  );
 
   useEffect(() => {
     document.addEventListener('scroll', scrollHandler);
@@ -113,7 +80,43 @@ export default function App() {
     return function () {
       document.removeEventListener('scroll', scrollHandler);
     };
-  }, []);
+  }, [scrollHandler]);
+
+  const handleAdd = async (newHero, image) => {
+    const { hero } = await heroesApi.addHero(newHero);
+
+    const data = new FormData();
+    data.append('image', image);
+    data.append('heroName', hero.nickname);
+
+    const { imageUrl } = await heroesApi.uploadImage(hero._id, data);
+
+    setHeroes((state) => [...state, { ...hero, Images: [imageUrl] }]);
+  };
+
+  const handleDelete = async (heroId) => {
+    const { hero: deletedHero } = await heroesApi.removeHero(heroId);
+    setHeroes((heroes) =>
+      heroes.filter((hero) => hero._id !== deletedHero._id)
+    );
+  };
+
+  const handleUpdate = async (hero, heroId, image) => {
+    const updatedHero = await heroesApi.updateHero(heroId, hero);
+
+    const data = new FormData();
+    data.append('image', image);
+    data.append('heroName', hero.nickname);
+
+    const { imageUrl } = await heroesApi.uploadImage(heroId, data);
+    setHeroes((heroes) =>
+      heroes.map((hero) =>
+        hero.id === heroId
+          ? { ...updatedHero, images: [...hero.images, imageUrl] }
+          : hero
+      )
+    );
+  };
 
   // useEffect(() => {
   //   // if(!searchText){
@@ -183,14 +186,12 @@ export default function App() {
         <Navbar openModal={setModalActive} />
       </header>
       <main className={s.main}>
-        {/* <HeroForm onSubmit={handleAdd} /> */}
         {/* <SearchBar searchText={searchText} handleChange={handleChange} /> */}
         <Suspense fallback={<Loader />}>
           <HeroesList
             setEditHero={setEditHero}
             openModal={setModalActive}
             onDelete={handleDelete}
-            // onEdit={handleUpdate}
             heroes={heroes}
           />
         </Suspense>
@@ -199,6 +200,7 @@ export default function App() {
       {/* 
      <ToastContainer autoClose={3000} /> */}
       <Modal
+        setEditHero={setEditHero}
         active={modalActive}
         setActive={setModalActive}
         children={

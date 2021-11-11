@@ -1,45 +1,14 @@
-import { useReducer } from 'react';
+import { useReducer, useEffect, useState } from 'react';
 import s from './HeroForm.module.css';
 
 const initialState = {
   nickname: '',
-  realname: '',
-  description: '',
+  real_name: '',
+  origin_description: '',
   superpowers: '',
-  phrase: '',
+  catch_phrase: '',
   image: [],
 };
-
-function formReducer(state, action) {
-  switch (action.type) {
-    case 'nickname':
-      return { ...state, [action.type]: action.payload };
-
-    case 'realname':
-      return { ...state, [action.type]: action.payload };
-
-    case 'description':
-      return { ...state, [action.type]: action.payload };
-
-    case 'superpowers':
-      return { ...state, [action.type]: action.payload };
-
-    case 'phrase':
-      return { ...state, [action.type]: action.payload };
-
-    case 'image':
-      return {
-        ...state,
-        [action.type]: [...state.image, action.payload],
-      };
-
-    case 'reset':
-      return initialState;
-
-    default:
-      throw new Error(`Unsuported action type ${action.type}`);
-  }
-}
 
 export default function HeroForm({
   onAddHero,
@@ -48,135 +17,200 @@ export default function HeroForm({
   setEditHero,
   openModal,
 }) {
-  const [state, dispatch] = useReducer(formReducer, editHero || initialState);
+  const [state, dispatch] = useReducer(formReducer, initialState);
+  const [previewSource, setPreviewSource] = useState('');
+
+  function formReducer(state, action) {
+    switch (action.type) {
+      case 'nickname':
+        return { ...state, [action.type]: action.payload };
+
+      case 'real_name':
+        return { ...state, [action.type]: action.payload };
+
+      case 'origin_description':
+        return { ...state, [action.type]: action.payload };
+
+      case 'catch_phrase':
+        return { ...state, [action.type]: action.payload };
+
+      case 'superpowers':
+        return { ...state, [action.type]: action.payload };
+
+      case 'image':
+        previewFile(action.payload);
+        return {
+          ...state,
+          [action.type]: action.payload,
+        };
+
+      case 'edit':
+        return action.payload;
+
+      case 'reset': {
+        return initialState;
+      }
+
+      default:
+        throw new Error(`Unsupported action type ${action.type}`);
+    }
+  }
+
+  useEffect(() => {
+    editHero && dispatch({ type: 'edit', payload: editHero });
+    return () => {
+      setPreviewSource(null);
+      resetInputs();
+    };
+  }, [editHero]);
+
+  function previewFile(file) {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onloadend = () => {
+      setPreviewSource(reader.result);
+    };
+  }
 
   const resetInputs = () => dispatch({ type: 'reset' });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (
       !state.nickname &&
-      !state.realname &&
-      !state.description &&
+      !state.real_name &&
+      !state.origin_description &&
       !state.superpowers &&
-      !state.phrase &&
+      !state.catch_phrase &&
       !state.image
     ) {
       alert('Заполните все поля!');
       return;
     }
+
     editHero
       ? onUpdateHero(
           {
             nickname: state.nickname,
-            real_name: state.realname,
-            origin_description: state.description,
+            real_name: state.real_name,
+            origin_description: state.origin_description,
             superpowers: state.superpowers,
-            catch_phrase: state.phrase,
+            catch_phrase: state.catch_phrase,
           },
-          { heroId: state._id },
-          { image: state.image }
+          state.heroId,
+          state.image
         )
       : onAddHero(
           {
             nickname: state.nickname,
-            real_name: state.realname,
-            origin_description: state.description,
+            real_name: state.real_name,
+            origin_description: state.origin_description,
             superpowers: state.superpowers,
-            catch_phrase: state.phrase,
+            catch_phrase: state.catch_phrase,
           },
-          { image: state.image }
+          state.image
         );
-    resetInputs();
     setEditHero(null);
+    setPreviewSource(null);
+    resetInputs();
     openModal(false);
   };
 
   return (
-    <form className={s.heroForm} onSubmit={handleSubmit}>
-      <div className={s.heroFormFields}>
-        <h3 className={s.formTitle}>Superhero details</h3>
-        <label>
-          Nickname:
+    <>
+      <form className={s.heroForm} onSubmit={handleSubmit}>
+        <div className={s.heroFormFields}>
+          <h3 className={s.formTitle}>Superhero details</h3>
+          <label>
+            Nickname:
+            <input
+              autoComplete="off"
+              placeholder="nickname"
+              name="nickname"
+              className={s.textInput}
+              type="text"
+              value={state.nickname}
+              onChange={(e) =>
+                dispatch({ type: 'nickname', payload: e.target.value })
+              }
+            />
+          </label>
+          <label>
+            Real Name:
+            <input
+              autoComplete="off"
+              placeholder="real name"
+              name="real_name"
+              className={s.textInput}
+              type="text"
+              value={state.real_name}
+              onChange={(e) =>
+                dispatch({ type: 'real_name', payload: e.target.value })
+              }
+            />
+          </label>
+          <label>
+            Description:
+            <input
+              autoComplete="off"
+              placeholder="description"
+              name="origin_description"
+              className={s.textInput}
+              type="text"
+              value={state.origin_description}
+              onChange={(e) =>
+                dispatch({
+                  type: 'origin_description',
+                  payload: e.target.value,
+                })
+              }
+            />
+          </label>
+          <label>
+            Superpowers:
+            <input
+              autoComplete="off"
+              placeholder="superpowers"
+              name="superpowers"
+              className={s.textInput}
+              type="text"
+              value={state.superpowers}
+              onChange={(e) =>
+                dispatch({
+                  type: 'superpowers',
+                  payload: e.target.value,
+                })
+              }
+            />
+          </label>
+          <label>
+            Phrase:
+            <input
+              autoComplete="off"
+              placeholder="superhero phrase"
+              name="catch_phrase"
+              className={s.textInput}
+              type="text"
+              value={state.catch_phrase}
+              onChange={(e) =>
+                dispatch({ type: 'catch_phrase', payload: e.target.value })
+              }
+            />
+          </label>
           <input
-            placeholder="nickname"
-            name="nickname"
-            className={s.textInput}
-            type="text"
-            value={state.nickname}
-            onChange={(e) =>
-              dispatch({ type: 'nickname', payload: e.target.value })
-            }
+            name="image"
+            className={s.uploadInput}
+            type="file"
+            onChange={(event) => {
+              dispatch({ type: 'image', payload: event.target.files[0] });
+            }}
           />
-        </label>
-        <label>
-          Real Name:
-          <input
-            placeholder="real name"
-            name="realname"
-            className={s.textInput}
-            type="text"
-            value={state.realname}
-            onChange={(e) =>
-              dispatch({ type: 'realname', payload: e.target.value })
-            }
-          />
-        </label>
-        <label>
-          Description:
-          <input
-            placeholder="description"
-            name="description"
-            className={s.textInput}
-            type="text"
-            value={state.description}
-            onChange={(e) =>
-              dispatch({
-                type: 'description',
-                payload: e.target.value,
-              })
-            }
-          />
-        </label>
-        <label>
-          Superpowers:
-          <input
-            placeholder="superpowers"
-            name="superpowers"
-            className={s.textInput}
-            type="text"
-            value={state.superpowers}
-            onChange={(e) =>
-              dispatch({
-                type: 'superpowers',
-                payload: e.target.value,
-              })
-            }
-          />
-        </label>
-        <label>
-          Phrase:
-          <input
-            placeholder="superhero phrase"
-            name="phrase"
-            className={s.textInput}
-            type="text"
-            value={state.phrase}
-            onChange={(e) =>
-              dispatch({ type: 'phrase', payload: e.target.value })
-            }
-          />
-        </label>
-        <input
-          name="image"
-          className={s.uploadInput}
-          type="file"
-          onChange={(event) => {
-            dispatch({ type: 'image', payload: event.target.files[0] });
-          }}
-        />
-        <button type="submit">Submit</button>
-      </div>
-    </form>
+          {previewSource && (
+            <img src={previewSource} alt="chosen" style={{ width: '100px' }} />
+          )}
+          <button type="submit">Submit</button>
+        </div>
+      </form>
+    </>
   );
 }
