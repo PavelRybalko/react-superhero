@@ -1,14 +1,5 @@
-import { useReducer, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import s from './HeroForm.module.css';
-
-const initialState = {
-  nickname: '',
-  real_name: '',
-  origin_description: '',
-  superpowers: '',
-  catch_phrase: '',
-  image: [],
-};
 
 export default function HeroForm({
   onAddHero,
@@ -17,52 +8,45 @@ export default function HeroForm({
   setEditHero,
   openModal,
 }) {
-  const [state, dispatch] = useReducer(formReducer, initialState);
+  const [nickname, setNickname] = useState(editHero?.nickname || '');
+  const [real_name, setRealname] = useState(editHero?.real_name || '');
+  const [origin_description, setOrigin_description] = useState(
+    editHero?.origin_description || ''
+  );
+  const [superpowers, setSuperpowers] = useState(editHero?.superpowers || '');
+  const [catch_phrase, setCatch_phrase] = useState(
+    editHero?.catch_phrase || ''
+  );
+  const [Image, setImage] = useState(editHero?.Image || []);
   const [previewSource, setPreviewSource] = useState('');
 
-  function formReducer(state, action) {
-    switch (action.type) {
+  const handleChange = (name, value) => {
+    switch (name) {
       case 'nickname':
-        return { ...state, [action.type]: action.payload };
-
+        return setNickname(value);
       case 'real_name':
-        return { ...state, [action.type]: action.payload };
-
+        return setRealname(value);
       case 'origin_description':
-        return { ...state, [action.type]: action.payload };
-
-      case 'catch_phrase':
-        return { ...state, [action.type]: action.payload };
-
+        return setOrigin_description(value);
       case 'superpowers':
-        return { ...state, [action.type]: action.payload };
-
-      case 'image':
-        previewFile(action.payload);
-        return {
-          ...state,
-          [action.type]: action.payload,
-        };
-
-      case 'edit':
-        return action.payload;
-
-      case 'reset': {
-        return initialState;
-      }
-
+        return setSuperpowers(value);
+      case 'catch_phrase':
+        return setCatch_phrase(value);
+      case 'Image':
+        previewFile(value);
+        return setImage(value);
       default:
-        throw new Error(`Unsupported action type ${action.type}`);
+        throw new Error(`Unsuported field name ${name}`);
     }
-  }
+  };
 
   useEffect(() => {
-    editHero && dispatch({ type: 'edit', payload: editHero });
     return () => {
+      setEditHero(null);
       setPreviewSource(null);
       resetInputs();
     };
-  }, [editHero]);
+  }, [editHero, setEditHero]);
 
   function previewFile(file) {
     const reader = new FileReader();
@@ -72,17 +56,24 @@ export default function HeroForm({
     };
   }
 
-  const resetInputs = () => dispatch({ type: 'reset' });
+  const resetInputs = () => {
+    setNickname('');
+    setRealname('');
+    setOrigin_description('');
+    setSuperpowers('');
+    setCatch_phrase('');
+    setImage([]);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (
-      !state.nickname &&
-      !state.real_name &&
-      !state.origin_description &&
-      !state.superpowers &&
-      !state.catch_phrase &&
-      !state.image
+      !nickname &&
+      !real_name &&
+      !origin_description &&
+      !superpowers &&
+      !catch_phrase &&
+      !Image
     ) {
       alert('Заполните все поля!');
       return;
@@ -91,24 +82,24 @@ export default function HeroForm({
     editHero
       ? onUpdateHero(
           {
-            nickname: state.nickname,
-            real_name: state.real_name,
-            origin_description: state.origin_description,
-            superpowers: state.superpowers,
-            catch_phrase: state.catch_phrase,
+            nickname,
+            real_name,
+            origin_description,
+            superpowers,
+            catch_phrase,
           },
-          state.heroId,
-          state.image
+          editHero.heroId,
+          Image
         )
       : onAddHero(
           {
-            nickname: state.nickname,
-            real_name: state.real_name,
-            origin_description: state.origin_description,
-            superpowers: state.superpowers,
-            catch_phrase: state.catch_phrase,
+            nickname,
+            real_name,
+            origin_description,
+            superpowers,
+            catch_phrase,
           },
-          state.image
+          Image
         );
     setEditHero(null);
     setPreviewSource(null);
@@ -129,10 +120,8 @@ export default function HeroForm({
               name="nickname"
               className={s.textInput}
               type="text"
-              value={state.nickname}
-              onChange={(e) =>
-                dispatch({ type: 'nickname', payload: e.target.value })
-              }
+              value={nickname}
+              onChange={(e) => handleChange(e.target.name, e.target.value)}
             />
           </label>
           <label>
@@ -143,10 +132,8 @@ export default function HeroForm({
               name="real_name"
               className={s.textInput}
               type="text"
-              value={state.real_name}
-              onChange={(e) =>
-                dispatch({ type: 'real_name', payload: e.target.value })
-              }
+              value={real_name}
+              onChange={(e) => handleChange(e.target.name, e.target.value)}
             />
           </label>
           <label>
@@ -157,13 +144,8 @@ export default function HeroForm({
               name="origin_description"
               className={s.textInput}
               type="text"
-              value={state.origin_description}
-              onChange={(e) =>
-                dispatch({
-                  type: 'origin_description',
-                  payload: e.target.value,
-                })
-              }
+              value={origin_description}
+              onChange={(e) => handleChange(e.target.name, e.target.value)}
             />
           </label>
           <label>
@@ -174,13 +156,8 @@ export default function HeroForm({
               name="superpowers"
               className={s.textInput}
               type="text"
-              value={state.superpowers}
-              onChange={(e) =>
-                dispatch({
-                  type: 'superpowers',
-                  payload: e.target.value,
-                })
-              }
+              value={superpowers}
+              onChange={(e) => handleChange(e.target.name, e.target.value)}
             />
           </label>
           <label>
@@ -191,18 +168,16 @@ export default function HeroForm({
               name="catch_phrase"
               className={s.textInput}
               type="text"
-              value={state.catch_phrase}
-              onChange={(e) =>
-                dispatch({ type: 'catch_phrase', payload: e.target.value })
-              }
+              value={catch_phrase}
+              onChange={(e) => handleChange(e.target.name, e.target.value)}
             />
           </label>
           <input
-            name="image"
+            name="Image"
             className={s.uploadInput}
             type="file"
-            onChange={(event) => {
-              dispatch({ type: 'image', payload: event.target.files[0] });
+            onChange={(e) => {
+              handleChange(e.target.name, e.target.files[0]);
             }}
           />
           {previewSource && (

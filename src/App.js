@@ -49,13 +49,14 @@ export default function App() {
         .finally(() => {
           setLoading(false);
           setFetching(false);
+          setPage((prevState) => prevState + 1);
           window.scrollTo({
             top: document.documentElement.offsetHeight,
             behavior: 'smooth',
           });
         });
     }
-  }, [fetching, pageSize]);
+  }, [fetching, pageSize, page]);
 
   const scrollHandler = useCallback(
     (e) => {
@@ -67,7 +68,6 @@ export default function App() {
           100 &&
         heroes.length < totalHeroes
       ) {
-        setPage((prevState) => prevState + 1);
         setFetching(true);
       }
     },
@@ -102,6 +102,7 @@ export default function App() {
   };
 
   const handleUpdate = async (hero, heroId, image) => {
+    debugger;
     const updatedHero = await heroesApi.updateHero(heroId, hero);
 
     const data = new FormData();
@@ -200,17 +201,18 @@ export default function App() {
       {/* 
      <ToastContainer autoClose={3000} /> */}
       <Modal
-        setEditHero={setEditHero}
         active={modalActive}
         setActive={setModalActive}
         children={
-          <HeroForm
-            onAddHero={handleAdd}
-            onUpdateHero={handleUpdate}
-            editHero={editHero}
-            setEditHero={setEditHero}
-            openModal={setModalActive}
-          />
+          modalActive && (
+            <HeroForm
+              onAddHero={handleAdd}
+              onUpdateHero={handleUpdate}
+              editHero={editHero}
+              setEditHero={setEditHero}
+              openModal={setModalActive}
+            />
+          )
         }
       />
     </Container>

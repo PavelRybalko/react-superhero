@@ -10,9 +10,8 @@ const styles = {
 // const modalRoot = document.querySelector('#modal-root');
 const modalRoot = document.getElementById('modal-root');
 
-export default function Modal({ setEditHero, active, setActive, children }) {
+export default function Modal({ active, setActive, children }) {
   const handleCloseModal = () => {
-    setEditHero(null);
     setActive(false);
   };
 
