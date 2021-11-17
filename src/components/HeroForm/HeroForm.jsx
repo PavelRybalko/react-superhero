@@ -36,7 +36,7 @@ export default function HeroForm({
         previewFile(value);
         return setImage(value);
       default:
-        throw new Error(`Unsuported field name ${name}`);
+        throw new Error(`Unsupported field name ${name}`);
     }
   };
 

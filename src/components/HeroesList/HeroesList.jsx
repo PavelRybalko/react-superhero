@@ -14,9 +14,9 @@ export default function HeroesList({
         {heroes &&
           heroes.map((hero) => (
             <Hero
+              key={hero._id}
               openModal={openModal}
               onDelete={onDelete}
-              key={hero._id}
               hero={hero}
               setEditHero={setEditHero}
             />

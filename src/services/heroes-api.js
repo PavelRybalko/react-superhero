@@ -29,7 +29,7 @@ const removeHero = (heroId) => {
 
 const updateHero = (heroId, hero) => {
   return axios.put(`/${heroId}`, hero).then(({ data: { data } }) => {
-    return data;
+    return data.hero;
   });
 };
 

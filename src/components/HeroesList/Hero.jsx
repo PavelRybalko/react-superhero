@@ -17,7 +17,7 @@ export default function Hero({
   return (
     <li className={s.listItem}>
       <img
-        src={image.length > 0 ? image[0] : ''}
+        src={image?.length > 0 ? image[0] : ''}
         alt={nickname}
         className={s.productImage}
       />
