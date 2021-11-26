@@ -29,3 +29,30 @@
   font-weight: bold;
   color: rgb(25, 25, 34);
 }
+
+.buttons {
+  display: flex;
+  justify-content: space-evenly;
+}
+
+.image {
+  min-width: 200px;
+  width: 200px;
+  object-fit: cover;
+}
+
+.myCard {
+  min-width: 300px;
+}
+
+.deleteImageBtn {
+  transition: 0.4s all;
+  opacity: 0;
+  position: absolute;
+  right: 5px;
+  top: 5px;
+}
+
+.image:hover .deleteImageBtn {
+  opacity: 1;
+}

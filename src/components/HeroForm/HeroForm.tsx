@@ -1,5 +1,21 @@
-import { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import s from './HeroForm.module.css';
+import { CgClose } from 'react-icons/cg';
+import { IHero } from '../../interfaces/Hero.interface';
+import { IHeroFormItem } from '../../interfaces/HeroFormItem.interface';
+
+interface HeroFormProps {
+  onAddHero(hero: IHeroFormItem, Images: File | null): void;
+  onUpdateHero(hero: IHeroFormItem, heroId: string, Images: File | null): void;
+  editHero: IHero | null;
+  setEditHero(hero: IHero | null): void;
+  openModal(setValue: boolean): void;
+  onDeleteImage(id: string, image: string): void;
+}
+
+const styles = {
+  marginRight: 6,
+};
 
 export default function HeroForm({
   onAddHero,
@@ -7,7 +23,8 @@ export default function HeroForm({
   editHero,
   setEditHero,
   openModal,
-}) {
+  onDeleteImage,
+}: HeroFormProps) {
   const [nickname, setNickname] = useState(editHero?.nickname || '');
   const [real_name, setRealname] = useState(editHero?.real_name || '');
   const [origin_description, setOrigin_description] = useState(
@@ -17,10 +34,14 @@ export default function HeroForm({
   const [catch_phrase, setCatch_phrase] = useState(
     editHero?.catch_phrase || ''
   );
-  const [Image, setImage] = useState(editHero?.Image || []);
-  const [previewSource, setPreviewSource] = useState('');
+  const [Images, setImages] = useState<File | null>(null);
+  const [previewSource, setPreviewSource] = useState<
+    string | null | ArrayBuffer
+  >(null);
 
-  const handleChange = (name, value) => {
+  const inputFileRef = React.useRef<HTMLInputElement>(null);
+
+  const handleChange = (name: string, value: any) => {
     switch (name) {
       case 'nickname':
         return setNickname(value);
@@ -32,23 +53,15 @@ export default function HeroForm({
         return setSuperpowers(value);
       case 'catch_phrase':
         return setCatch_phrase(value);
-      case 'Image':
+      case 'Images':
         previewFile(value);
-        return setImage(value);
+        return setImages(value);
       default:
         throw new Error(`Unsupported field name ${name}`);
     }
   };
 
-  useEffect(() => {
-    return () => {
-      setEditHero(null);
-      setPreviewSource(null);
-      resetInputs();
-    };
-  }, [editHero, setEditHero]);
-
-  function previewFile(file) {
+  function previewFile(file: File) {
     const reader = new FileReader();
     reader.readAsDataURL(file);
     reader.onloadend = () => {
@@ -62,21 +75,31 @@ export default function HeroForm({
     setOrigin_description('');
     setSuperpowers('');
     setCatch_phrase('');
-    setImage([]);
+    setImages(null);
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = async (event: React.SyntheticEvent) => {
+    event.preventDefault();
     if (
-      !nickname &&
-      !real_name &&
-      !origin_description &&
-      !superpowers &&
-      !catch_phrase &&
-      !Image
+      !nickname ||
+      !real_name ||
+      !origin_description ||
+      !superpowers ||
+      (!catch_phrase && !Images)
     ) {
       alert('Заполните все поля!');
       return;
+    }
+
+    if (
+      editHero?.nickname === nickname &&
+      editHero?.real_name === real_name &&
+      editHero?.origin_description === origin_description &&
+      editHero?.superpowers === superpowers &&
+      editHero?.catch_phrase === catch_phrase &&
+      !Images?.size
+    ) {
+      openModal(false);
     }
 
     editHero
@@ -88,8 +111,8 @@ export default function HeroForm({
             superpowers,
             catch_phrase,
           },
-          editHero.heroId,
-          Image
+          editHero._id,
+          Images
         )
       : onAddHero(
           {
@@ -99,7 +122,7 @@ export default function HeroForm({
             superpowers,
             catch_phrase,
           },
-          Image
+          Images
         );
     setEditHero(null);
     setPreviewSource(null);
@@ -109,13 +132,12 @@ export default function HeroForm({
 
   return (
     <>
-      <form className={s.heroForm} onSubmit={handleSubmit}>
+      <form className={s.heroForm} onSubmit={handleSubmit} autoComplete="off">
         <div className={s.heroFormFields}>
           <h3 className={s.formTitle}>Superhero details</h3>
           <label>
             Nickname:
             <input
-              autoComplete="off"
               placeholder="nickname"
               name="nickname"
               className={s.textInput}
@@ -127,7 +149,6 @@ export default function HeroForm({
           <label>
             Real Name:
             <input
-              autoComplete="off"
               placeholder="real name"
               name="real_name"
               className={s.textInput}
@@ -139,7 +160,6 @@ export default function HeroForm({
           <label>
             Description:
             <input
-              autoComplete="off"
               placeholder="description"
               name="origin_description"
               className={s.textInput}
@@ -151,7 +171,6 @@ export default function HeroForm({
           <label>
             Superpowers:
             <input
-              autoComplete="off"
               placeholder="superpowers"
               name="superpowers"
               className={s.textInput}
@@ -163,7 +182,6 @@ export default function HeroForm({
           <label>
             Phrase:
             <input
-              autoComplete="off"
               placeholder="superhero phrase"
               name="catch_phrase"
               className={s.textInput}
@@ -173,17 +191,50 @@ export default function HeroForm({
             />
           </label>
           <input
-            name="Image"
+            ref={inputFileRef}
+            name="Images"
             className={s.uploadInput}
             type="file"
             onChange={(e) => {
-              handleChange(e.target.name, e.target.files[0]);
+              handleChange(
+                e.target.name,
+                e.target.files && (e.target.files[0] as File)
+              );
             }}
           />
-          {previewSource && (
-            <img src={previewSource} alt="chosen" style={{ width: '100px' }} />
+          {(previewSource || editHero?.Images[0]) && (
+            <div className={s.previewContainer}>
+              <button
+                className={s.imageDeleteButton}
+                title="delete"
+                type="button"
+                onClick={() => {
+                  if (editHero?.Images?.length) {
+                    onDeleteImage(editHero?._id, editHero.Images[0]);
+                    setEditHero({ ...editHero, Images: [] });
+                  }
+                  if (null !== inputFileRef.current) {
+                    inputFileRef.current.value = '';
+                  }
+                  setPreviewSource(null);
+                  setImages(null);
+                }}
+              >
+                <CgClose size="26" style={styles} />
+              </button>
+              <img
+                className={s.imagePreview}
+                src={previewSource?.toString() || editHero?.Images[0]}
+                alt="chosen"
+              />
+            </div>
           )}
-          <button type="submit">Submit</button>
+          <button
+            className="waves-effect  deep-orange darken-3 btn-small"
+            type="submit"
+          >
+            Submit
+          </button>
         </div>
       </form>
     </>

@@ -14,6 +14,11 @@ button.active {
   font-weight: bold;
 }
 
+button:focus,
+a:focus {
+  background-color: transparent;
+}
+
 .main {
   width: 700px;
   margin: 0 auto;

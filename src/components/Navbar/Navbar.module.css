@@ -9,6 +9,7 @@
 }
 
 #logo {
+  color: black;
   font-size: 30px;
   font-weight: 800;
 }
@@ -18,11 +19,24 @@
   align-items: center;
   justify-content: center;
   font-size: 16px;
-  font-weight: normal;
+  font-weight: bold;
   width: auto;
   text-decoration: none;
   height: 35px;
   background-color: inherit;
   border: none;
   cursor: pointer;
+  transition: all 0.2s;
+}
+
+.addIcon {
+  transition: all 0.2s;
+}
+
+.addButton:hover {
+  color: #0091ea;
+}
+
+.addButton:hover .addIcon {
+  transform: scale(1.1);
 }

@@ -7,10 +7,15 @@ const styles = {
   marginRight: 6,
 };
 
-// const modalRoot = document.querySelector('#modal-root');
-const modalRoot = document.getElementById('modal-root');
+const modalRoot = document.getElementById('modal-root') as HTMLElement;
 
-export default function Modal({ active, setActive, children }) {
+interface ModalProps {
+  active: boolean;
+  setActive(setValue: boolean): void;
+  children: React.ReactNode;
+}
+
+export default function Modal({ active, setActive, children }: ModalProps) {
   const handleCloseModal = () => {
     setActive(false);
   };
@@ -24,9 +29,11 @@ export default function Modal({ active, setActive, children }) {
         className={active ? `${s.modalContent} ${s.active}` : s.modalContent}
         onClick={(e) => e.stopPropagation()}
       >
-        <button className={s.modalCloseButton} onClick={handleCloseModal}>
-          <CgClose size="26" style={styles} />
-        </button>
+        {active && (
+          <button className={s.modalCloseButton} onClick={handleCloseModal}>
+            <CgClose size="26" style={styles} />
+          </button>
+        )}
         {children}
       </div>
     </div>,

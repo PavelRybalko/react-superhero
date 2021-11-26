@@ -11,6 +11,7 @@
   opacity: 0;
   pointer-events: none;
   transition: 0.5s;
+  z-index: 5;
 }
 
 .modal.active {
@@ -41,4 +42,8 @@
   cursor: pointer;
   right: 16px;
   top: 24px;
+}
+
+.modalCloseButton:focus {
+  background-color: transparent;
 }
