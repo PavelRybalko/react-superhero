@@ -43,38 +43,50 @@ const fetchHeroes = ({ searchText = '', page = 1, pageSize = 5 }) => {
 
 const addHero = (newHero: IHeroFormItem) => {
   try {
+    return axios
+      .post<IHeroResponseData>('/', newHero)
+      .then(({ data: { data } }) => {
+        return data;
+      });
   } catch (error) {
     console.log(error);
   }
-  return axios
-    .post<IHeroResponseData>('/', newHero)
-    .then(({ data: { data } }) => {
-      return data;
-    });
 };
 
 const uploadImage = (heroId: string, data: FormData) => {
-  return axios
-    .patch<IUploadImageResponseData>(`/image/${heroId}`, data)
-    .then(({ data: { data } }) => {
-      return data;
-    });
+  try {
+    return axios
+      .patch<IUploadImageResponseData>(`/image/${heroId}`, data)
+      .then(({ data: { data } }) => {
+        return data;
+      });
+  } catch (error) {
+    console.log(error);
+  }
 };
 
 const removeHero = (heroId: string) => {
-  return axios
-    .delete<IHeroResponseData>(`/${heroId}`)
-    .then(({ data: { data } }) => {
-      return data;
-    });
+  try {
+    return axios
+      .delete<IHeroResponseData>(`/${heroId}`)
+      .then(({ data: { data } }) => {
+        return data;
+      });
+  } catch (error) {
+    console.log(error);
+  }
 };
 
 const updateHero = (heroId: string, hero: IHeroFormItem) => {
-  return axios
-    .put<IHeroResponseData>(`/${heroId}`, hero)
-    .then(({ data: { data } }) => {
-      return data.hero;
-    });
+  try {
+    return axios
+      .put<IHeroResponseData>(`/${heroId}`, hero)
+      .then(({ data: { data } }) => {
+        return data.hero;
+      });
+  } catch (error) {
+    console.log(error);
+  }
 };
 
 const api = {
